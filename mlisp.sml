@@ -1,4 +1,5 @@
 
+(* mohammed obedat 319053823 obedat@campus.technion.ac.il     mohammed khateeb 206890998 kh.mohammad@campus.technion.ac.il *)
 
 
 fun and1(x:bool,y:bool) = if x then y else false;
