@@ -34,6 +34,9 @@ else tokenizeAux(substring(s,getNextWS(s,0) ,size(s)-getNextWS(s,0)),l@[substrin
 fun tokenize(s:string) = tokenizeAux(s,[]);
 
 
+fun tokenize2 (x:string)= String.tokens (Char.isSpace) (String.translate (str) (x));
+
+
 
 
 
