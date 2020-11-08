@@ -1,4 +1,4 @@
-(* mohammed 319053823 obedat@campus.technion.ac.il     mohammed 206890998 kh.mohammad@campus.technion.ac.il *)
+(* mohammed obedat 319053823 obedat@campus.technion.ac.il     mohammed khateeb 206890998 kh.mohammad@campus.technion.ac.il *)
     fun sig1 a b f = f(a,f(a,b));
     fun sig2 (a,b) f = if(f(Math.ln(b))^"a" = "a") then true else sig2 (a+1,b) f;
     fun sig3 f a b c = f a b;
