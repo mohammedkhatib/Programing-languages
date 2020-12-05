@@ -34,3 +34,20 @@ insertAux index h (Value(a,b)::hashTail:'a HashTable) (x:int,v) hashIndex = if a
 fun insert h htable (x,v)= insertAux 0 h htable (x,v) x;
 
 
+fun get h (Empty::hashTail:'a HashTable) key = get h hashTail key |
+    get h (Deleted::hashTail:'a HashTable) key = get h hashTail key |
+    get h (Value(x:int,v)::hashTail:'a HashTable) key = if x=key then (x,v)
+                                                        else get h hashTail key;
+                                                        
+                                                        
+
+
+fun removeAux index h [] key = []
+|
+removeAux index h (Empty::hashTail:'a HashTable) key = removeAux (index+1) h hashTail key
+|
+removeAux index h (Deleted::hashTail:'a HashTable) key = removeAux (index+1) h hashTail key
+|
+removeAux index h (Value(a,b)::hashTail:'a HashTable) key = if a= key then Deleted::hashTail
+                                                            else removeAux (index+1) h hashTail key;
+                                                  
