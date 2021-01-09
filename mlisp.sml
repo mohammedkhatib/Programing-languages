@@ -52,13 +52,18 @@ fun eval (ATOM NIL) EnvStack = ((ATOM NIL),EnvStack)
     |
         AddActualEnv(actuals,ATOM(NIL),Env) = raise MlispError
     |
-        AddActualEnv ((CONS(ATOM(SYMBOL(var_name)), tail1),(CONS(var_val,tail2)),old_env))=let
-    val curr_env=(defineNested var_name old_env var_val);
-    in AddActualEnv(tail1,tail2,curr_env) end
-    val CONS(formal_params,func_body) = (find FuncName EnvStack) handle     Undefined => raise MlispError;
+        AddActualEnv ((CONS(ATOM(SYMBOL(var_name)), tail1),(CONS(var_val,tail2)),old_env))=
+     let
+       val curr_env=(defineNested var_name old_env var_val);
+       in 
+         AddActualEnv(tail1,tail2,curr_env)
+       end
+    
+    val CONS(formal_params,func_body) = (find FuncName EnvStack) handle Undefined => raise MlispError;
     val new_stack = AddActualEnv(formal_params, Actuals, EnvStack);
     val (ret_val, garbage_stack) = (eval func_body EnvStack)
-    in (ret_val,EnvStack) 
+    in 
+      (ret_val,EnvStack) 
     end  
   |
 
@@ -68,7 +73,7 @@ fun eval (ATOM NIL) EnvStack = ((ATOM NIL),EnvStack)
         
   |
   eval(CONS(ATOM(SYMBOL("-")),CONS(ATOM(NUMBER(n1)),CONS(ATOM(NUMBER(n2)),ATOM(NIL))))) EnvStack =
-            ((ATOM(NUMBER(n1+n2))),EnvStack)
+            ((ATOM(NUMBER(n1-n2))),EnvStack)
         
   |
   eval(CONS(ATOM(SYMBOL("*")),CONS(ATOM(NUMBER(n1)),CONS(ATOM(NUMBER(n2)),ATOM(NIL))))) EnvStack =
@@ -76,15 +81,6 @@ fun eval (ATOM NIL) EnvStack = ((ATOM NIL),EnvStack)
   |
   eval(CONS(ATOM(SYMBOL("div")),CONS(ATOM(NUMBER(n1)),CONS(ATOM(NUMBER(n2)),ATOM(NIL))))) EnvStack =
             ((ATOM(NUMBER(n1 div n2))),EnvStack)
-  |(*define for variable*)
-  eval (CONS(ATOM(SYMBOL("define")),CONS(ATOM(SYMBOL(VarName)),CONS(VarExp,ATOM(NIL))))) EnvStack =
-    let
-    val EvalVal =  #1(eval VarExp EnvStack);
-    val newS = defineNested VarName EnvStack EvalVal;
-    in (ATOM(NIL),newS) end
-  |(*define for functions*)
-    eval (CONS(ATOM(SYMBOL("define")),CONS(ATOM(SYMBOL(Fname)),CONS(params,CONS(Fbody,ATOM(NIL)))))) EnvStack =
-     ((ATOM(NIL), defineNested Fname EnvStack (CONS(params,Fbody))))
   |
    eval (CONS(ATOM(SYMBOL("+")),CONS(sexp1,CONS(sexp2,ATOM(NIL))))) EnvStack =let
      val new_sexp = (CONS(ATOM(SYMBOL("+")),CONS(#1(eval sexp1 EnvStack),CONS(#1(eval sexp2 EnvStack),ATOM(NIL)))));
@@ -116,5 +112,14 @@ fun eval (ATOM NIL) EnvStack = ((ATOM NIL),EnvStack)
         fun cons_tail (CONS(sexp1,sexp2)) = sexp2;
         in  ((cons_tail(#1(eval sexp EnvStack))), EnvStack)
         end
+  |(*define for variable*)
+  eval (CONS(ATOM(SYMBOL("define")),CONS(ATOM(SYMBOL(VarName)),CONS(VarExp,ATOM(NIL))))) EnvStack =
+    let
+    val EvalVal =  #1(eval VarExp EnvStack);
+    val newS = defineNested VarName EnvStack EvalVal;
+    in (ATOM(NIL),newS) end
+  |(*define for functions*)
+  eval (CONS(ATOM(SYMBOL("define")),CONS(ATOM(SYMBOL(Fname)),CONS(params,CONS(Fbody,ATOM(NIL)))))) EnvStack =
+     ((ATOM(NIL), defineNested Fname EnvStack (CONS(params,Fbody))))
   |
 eval a b = raise MlispError;
