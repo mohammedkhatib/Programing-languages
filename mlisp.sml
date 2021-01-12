@@ -1,35 +1,5 @@
 (* mohammed 319053823 obedat@campus.technion.ac.il     mohammed 206890998 kh.mohammad@campus.technion.ac.il *)
 exception MlispError;
-exception Undefined;
-exception Empty;
-
-datatype Atom =
-   SYMBOL of string | NUMBER of int | NIL;
-
-datatype SExp =
-   ATOM of Atom | CONS of (SExp * SExp);
-
-fun initEnv () = fn (str:string) => raise Undefined; 
-
-(*Section 2*)
-fun define str f a = (fn (x:string) => if(x = str) then a else (f x));
-
-(*Section 3*)
-fun emptyNestedEnv () = [initEnv ()];
-fun pushEnv newenv lst = newenv::lst;
-fun popEnv [] = raise Empty | popEnv lst = List.tl lst;
-fun topEnv [] = raise Empty | topEnv lst = List.hd lst;
-
-(*Section 4*)
-fun defineNested _ [] _ = raise Empty | defineNested str lst vlue = (define str (List.hd lst) vlue)::List.tl lst;
-
-(*Section 5*)
-fun find str [] = raise Undefined | find (str:string) EnvLst = (topEnv EnvLst str) handle Undefined =>(find str (popEnv EnvLst));
-
-
-
-
-exception MlispError;
 
 
 
@@ -43,30 +13,6 @@ fun eval (ATOM NIL) EnvStack = ((ATOM NIL),EnvStack)
     val x = (find sym EnvStack) handle Undefined => raise MlispError
     in (x, EnvStack) end
   |
-
-  eval (CONS(ATOM(SYMBOL(FuncName)), Actuals)) EnvStack = let
-  
-  fun AddActualEnv(ATOM(NIL),ATOM(NIL),Env) = Env
-    |
-        AddActualEnv(ATOM(NIL),formals,Env) = raise MlispError
-    |
-        AddActualEnv(actuals,ATOM(NIL),Env) = raise MlispError
-    |
-        AddActualEnv ((CONS(ATOM(SYMBOL(var_name)), tail1),(CONS(var_val,tail2)),old_env))=
-     let
-       val curr_env=(defineNested var_name old_env var_val);
-       in 
-         AddActualEnv(tail1,tail2,curr_env)
-       end
-    
-    val CONS(formal_params,func_body) = (find FuncName EnvStack) handle Undefined => raise MlispError;
-    val new_stack = AddActualEnv(formal_params, Actuals, EnvStack);
-    val (ret_val, garbage_stack) = (eval func_body EnvStack)
-    in 
-      (ret_val,EnvStack) 
-    end  
-  |
-
 
   eval(CONS(ATOM(SYMBOL("+")),CONS(ATOM(NUMBER(n1)),CONS(ATOM(NUMBER(n2)),ATOM(NIL))))) EnvStack =
             ((ATOM(NUMBER(n1+n2))),EnvStack)
@@ -122,4 +68,28 @@ fun eval (ATOM NIL) EnvStack = ((ATOM NIL),EnvStack)
   eval (CONS(ATOM(SYMBOL("define")),CONS(ATOM(SYMBOL(Fname)),CONS(params,CONS(Fbody,ATOM(NIL)))))) EnvStack =
      ((ATOM(NIL), defineNested Fname EnvStack (CONS(params,Fbody))))
   |
+
+  eval (CONS(ATOM(SYMBOL(FuncName)), Actuals)) EnvStack = let
+  
+  fun AddActualEnv(ATOM(NIL),ATOM(NIL),Env) = Env
+    |
+        AddActualEnv(ATOM(NIL),formals,Env) = raise MlispError
+    |
+        AddActualEnv(actuals,ATOM(NIL),Env) = raise MlispError
+    |
+        AddActualEnv ((CONS(ATOM(SYMBOL(var_name)), tail1),(CONS(var_val,tail2)),old_env))=
+     let
+       val curr_env=(defineNested var_name old_env var_val);
+       in 
+         AddActualEnv(tail1,tail2,curr_env)
+       end
+    
+    val CONS(formal_params,func_body) = (find FuncName EnvStack) handle Undefined => raise MlispError;
+    val new_stack = AddActualEnv(formal_params, Actuals, EnvStack);
+    val (ret_val, garbage_stack) = (eval func_body EnvStack)
+    in 
+      (ret_val,EnvStack) 
+    end  
+  |
+
 eval a b = raise MlispError;
